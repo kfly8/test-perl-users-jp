@@ -43,7 +43,7 @@ sub wanted {
         make_path($dest_dir);
     }
 
-    if (is_text($file)) {
+    if (required_to_convert($file)) {
         my $html = convert_html($file);
 
         my $basename  = basename($file);
@@ -52,7 +52,7 @@ sub wanted {
 
         write_file($dest_html, $html);
     }
-    else { # css, js, png ...
+    else { # html, css, js, png ...
         copy($file, $dest_dir) or die $!;
     }
 }
@@ -122,7 +122,7 @@ sub _parse_meta {
     }
 }
 
-sub is_text {
+sub required_to_convert {
     my ($file) = @_;
     return !!detect_format($file);
 } 
@@ -134,7 +134,6 @@ sub detect_format {
     return $ext eq 'md'       ? 'markdown'
          : $ext eq 'markdown' ? 'markdown'
          : $ext eq 'txt'      ? 'hatena'
-         : $ext eq 'html'     ? 'html'
          : undef
 }
 
@@ -143,9 +142,6 @@ sub format_text {
 
     if ($format eq 'markdown') {
         return Text::Markdown::markdown($text);
-    }
-    elsif ($format eq 'html') {
-        return $text;
     }
     elsif ($format eq 'hatena') {
         state $xatena = Text::Xatena->new;
